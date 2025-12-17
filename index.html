@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GESTÃO DE MANUTENÇÃO SMT - ONLINE</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* TODO O SEU CSS ORIGINAL AQUI - NÃO MUDE NADA */
+        :root {
+            --primary: #1a237e;
+            --secondary: #3949ab;
+            --accent: #00b0ff;
+            --success: #00c853;
+            --warning: #ff9100;
+            --danger: #ff1744;
+            --light: #f5f5f5;
+            --dark: #263238;
+            --gray: #757575;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f0f2f5;
+            color: var(--dark);
+            overflow-x: hidden;
+        }
+        
+        /* APENAS COLE TODO O SEU CSS AQUI */
+        /* DEIXEI ESPAÇO PARA VOCÊ COLAR SEU CSS COMPLETO */
+        
+    </style>
+</head>
+<body>
+    <!-- Tela de Login -->
+    <div id="loginScreen" class="login-container">
+        <div class="login-box">
+            <div class="login-logo">
+                <h1><i class="fas fa-cloud"></i> SMT ONLINE</h1>
+                <p>Sistema de Gestão de Manutenção - Versão Online</p>
+                <div id="networkStatus" class="network-notification" style="margin-top: 15px; display: none;">
+                    <span id="networkStatusText"></span>
+                </div>
+            </div>
+            
+            <div id="loginForm">
+                <div class="form-group">
+                    <label class="form-label">E-mail</label>
+                    <input type="email" id="loginEmail" class="form-control" placeholder="seu@email.com" value="admin@smt.com">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Senha</label>
+                    <input type="password" id="loginPassword" class="form-control" placeholder="Digite sua senha" value="admin123">
+                </div>
+                
+                <div class="form-group">
+                    <button id="btnLogin" class="btn btn-primary" style="width: 100%;">
+                        <i class="fas fa-sign-in-alt"></i> Entrar
+                    </button>
+                </div>
+                
+                <div style="text-align: center; margin-top: 15px;">
+                    <a href="#" id="registerLink" style="color: var(--secondary); text-decoration: none;">
+                        <i class="fas fa-user-plus"></i> Criar nova conta
+                    </a>
+                </div>
+            </div>
+            
+            <div id="registerForm" style="display: none;">
+                <div class="form-group">
+                    <label class="form-label">Nome Completo</label>
+                    <input type="text" id="registerName" class="form-control" placeholder="Seu nome completo">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">E-mail</label>
+                    <input type="email" id="registerEmail" class="form-control" placeholder="seu@email.com">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Senha</label>
+                    <input type="password" id="registerPassword" class="form-control" placeholder="Mínimo 6 caracteres">
+                </div>
+                
+                <div class="form-group">
+                    <button id="btnRegister" class="btn btn-success" style="width: 100%;">
+                        <i class="fas fa-user-plus"></i> Criar Conta
+                    </button>
+                </div>
+                
+                <div style="text-align: center; margin-top: 15px;">
+                    <a href="#" id="backToLoginLink" style="color: var(--secondary); text-decoration: none;">
+                        <i class="fas fa-arrow-left"></i> Voltar para o login
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sistema Principal -->
+    <div id="appContainer" class="app-container" style="display: none;">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-cloud"></i> SMT ONLINE</h2>
+                <p>Gestão de Manutenção</p>
+                <div class="network-info">
+                    <i class="fas fa-cloud"></i> Modo Online
+                    <div style="font-size: 0.7rem; margin-top: 5px;" id="onlineStatus">Conectado à nuvem</div>
+                </div>
+            </div>
+            
+            <div class="nav-menu">
+                <div class="nav-item active" data-page="dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </div>
+                
+                <div class="nav-item" data-page="tecnico">
+                    <i class="fas fa-user-cog"></i>
+                    <span>Cadastro Técnico</span>
+                </div>
+                
+                <div class="nav-item" data-page="fornecedor">
+                    <i class="fas fa-truck"></i>
+                    <span>Cadastrar Fornecedor</span>
+                </div>
+                
+                <div class="nav-item" data-page="item">
+                    <i class="fas fa-box"></i>
+                    <span>Cadastrar Item</span>
+                </div>
+                
+                <div class="nav-item" data-page="movimentacao">
+                    <i class="fas fa-exchange-alt"></i>
+                    <span>Entrada-Saída</span>
+                </div>
+                
+                <div class="nav-item" data-page="os">
+                    <i class="fas fa-clipboard-list"></i>
+                    <span>OS - Ordem de Serviço</span>
+                </div>
+                
+                <div class="nav-item" data-page="pesquisa">
+                    <i class="fas fa-search"></i>
+                    <span>Pesquisa</span>
+                </div>
+                
+                <div class="nav-item" data-page="configuracao">
+                    <i class="fas fa-cog"></i>
+                    <span>Configuração</span>
+                </div>
+                
+                <div class="nav-item" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Sair</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Conteúdo Principal -->
+        <div class="main-content">
+            <div class="topbar">
+                <div class="page-title" id="pageTitle">Dashboard</div>
+                
+                <div class="user-info">
+                    <i class="fas fa-user-circle"></i>
+                    <span id="currentUser">Carregando...</span>
+                    <div id="syncStatus" class="sync-indicator sync-active">
+                        <i class="fas fa-check-circle"></i> <span>Online</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="content-area" id="contentArea">
+                <!-- Conteúdo será carregado aqui dinamicamente -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // CONFIGURAÇÃO DO SUPABASE (BANCO DE DADOS ONLINE)
+        // ============================================
+        
+        // ⚠️ ⚠️ ⚠️ SUBSTITUA COM SUAS CREDENCIAIS ⚠️ ⚠️ ⚠️
+        const SUPABASE_URL = 'https://pcumepwvijsbklhhfxnl.supabase.co
+        const SUPABASE_ANON_KEY = 'sb_publishable_DpnPNxV9g7eeEZVZo0DnzA_ZQfCRAgU
+        
+        // Inicializar Supabase
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // Estado do sistema
+        let currentUser = null;
+        let db = {
+            tecnicos: [],
+            fornecedores: [],
+            itens: [],
+            movimentacoes: [],
+            ordensServico: [],
+            osPecas: []
+        };
+        
+        let editingItemId = null;
+        let editingTecnicoId = null;
+        let editingFornecedorId = null;
+        let editingOSId = null;
+        
+        // ============================================
+        // FUNÇÕES PRINCIPAIS DO SISTEMA ONLINE
+        // ============================================
+        
+        // Inicializar sistema
+        async function initSystem() {
+            try {
+                // Verificar se usuário já está logado
+                const { data: { session } } = await supabase.auth.getSession();
+                
+                if (session) {
+                    currentUser = session.user;
+                    await loadUserData();
+                    showMainApp();
+                } else {
+                    // Criar usuário admin padrão
+                    await createDefaultAdmin();
+                }
+            } catch (error) {
+                console.error('Erro ao inicializar sistema:', error);
+                showNotification('Erro ao conectar com o servidor', 'error');
+            }
+        }
+        
+        // Criar usuário admin padrão
+        async function createDefaultAdmin() {
+            try {
+                const { data, error } = await supabase.auth.signUp({
+                    email: 'admin@smt.com',
+                    password: 'admin123',
+                    options: {
+                        data: {
+                            full_name: 'Administrador SMT',
+                            role: 'admin'
+                        }
+                    }
+                });
+                
+                if (error && !error.message.includes('already registered')) {
+                    console.error('Erro ao criar admin:', error);
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+            }
+        }
+        
+        // Carregar dados do usuário
+        async function loadUserData() {
+            try {
+                showLoader();
+                
+                // Carregar todos os dados em paralelo
+                const [
+                    tecnicosRes,
+                    fornecedoresRes,
+                    itensRes,
+                    movimentacoesRes,
+                    ordensRes,
+                    pecasRes
+                ] = await Promise.all([
+                    supabase.from('tecnicos').select('*'),
+                    supabase.from('fornecedores').select('*'),
+                    supabase.from('itens').select('*'),
+                    supabase.from('movimentacoes').select('*'),
+                    supabase.from('ordens_servico').select('*'),
+                    supabase.from('os_pecas').select('*')
+                ]);
+                
+                // Atualizar banco de dados local
+                db.tecnicos = tecnicosRes.data || [];
+                db.fornecedores = fornecedoresRes.data || [];
+                db.itens = itensRes.data || [];
+                db.movimentacoes = movimentacoesRes.data || [];
+                db.ordensServico = ordensRes.data || [];
+                db.osPecas = pecasRes.data || [];
+                
+                updateSyncStatus('active', 'Dados sincronizados');
+                hideLoader();
+                
+            } catch (error) {
+                console.error('Erro ao carregar dados:', error);
+                updateSyncStatus('error', 'Erro ao carregar dados');
+                hideLoader();
+            }
+        }
+        
+        // ============================================
+        // AUTENTICAÇÃO
+        // ============================================
+        
+        async function login() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+            
+            if (!email || !password) {
+                alert('Por favor, preencha todos os campos!');
+                return;
+            }
+            
+            try {
+                showLoader();
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email,
+                    password
+                });
+                
+                if (error) throw error;
+                
+                currentUser = data.user;
+                await loadUserData();
+                showMainApp();
+                showNotification('Login realizado com sucesso!', 'success');
+                
+            } catch (error) {
+                console.error('Erro no login:', error.message);
+                alert('Erro no login: ' + error.message);
+            } finally {
+                hideLoader();
+            }
+        }
+        
+        async function register() {
+            const name = document.getElementById('registerName').value.trim();
+            const email = document.getElementById('registerEmail').value.trim();
+            const password = document.getElementById('registerPassword').value.trim();
+            
+            if (!name || !email || !password) {
+                alert('Por favor, preencha todos os campos!');
+                return;
+            }
+            
+            if (password.length < 6) {
+                alert('A senha deve ter pelo menos 6 caracteres!');
+                return;
+            }
+            
+            try {
+                showLoader();
+                const { data, error } = await supabase.auth.signUp({
+                    email,
+                    password,
+                    options: {
+                        data: {
+                            full_name: name
+                        }
+                    }
+                });
+                
+                if (error) throw error;
+                
+                alert('Conta criada com sucesso! Você já pode fazer login.');
+                showLoginForm();
+                
+            } catch (error) {
+                console.error('Erro no registro:', error.message);
+                alert('Erro no registro: ' + error.message);
+            } finally {
+                hideLoader();
+            }
+        }
+        
+        async function logout() {
+            if (confirm('Deseja realmente sair do sistema?')) {
+                try {
+                    await supabase.auth.signOut();
+                    currentUser = null;
+                    hideMainApp();
+                    showNotification('Logout realizado com sucesso!', 'success');
+                } catch (error) {
+                    console.error('Erro no logout:', error);
+                }
+            }
+        }
+        
+        // ============================================
+        // FUNÇÕES DE INTERFACE
+        // ============================================
+        
+        function showMainApp() {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('appContainer').style.display = 'flex';
+            document.getElementById('currentUser').textContent = currentUser.user_metadata?.full_name || currentUser.email;
+            navigateToPage('dashboard');
+        }
+        
+        function hideMainApp() {
+            document.getElementById('appContainer').style.display = 'none';
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('loginPassword').value = '';
+            showLoginForm();
+        }
+        
+        function showLoginForm() {
+            document.getElementById('registerForm').style.display = 'none';
+            document.getElementById('loginForm').style.display = 'block';
+        }
+        
+        function showRegisterForm() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('registerForm').style.display = 'block';
+        }
+        
+        function showLoader() {
+            let loader = document.getElementById('globalLoader');
+            if (!loader) {
+                loader = document.createElement('div');
+                loader.id = 'globalLoader';
+                loader.className = 'loader';
+                loader.style.position = 'fixed';
+                loader.style.top = '50%';
+                loader.style.left = '50%';
+                loader.style.transform = 'translate(-50%, -50%)';
+                loader.style.zIndex = '9999';
+                document.body.appendChild(loader);
+            }
+        }
+        
+        function hideLoader() {
+            const loader = document.getElementById('globalLoader');
+            if (loader) loader.remove();
+        }
+        
+        function updateSyncStatus(type, message) {
+            const syncStatus = document.getElementById('syncStatus');
+            if (syncStatus) {
+                syncStatus.className = 'sync-indicator';
+                if (type === 'active') {
+                    syncStatus.classList.add('sync-active');
+                } else if (type === 'warning') {
+                    syncStatus.classList.add('sync-warning');
+                } else if (type === 'error') {
+                    syncStatus.classList.add('sync-error');
+                }
+                
+                const icon = type === 'active' ? 'fa-check-circle' : 
+                            type === 'warning' ? 'fa-exclamation-triangle' : 'fa-times-circle';
+                
+                syncStatus.innerHTML = `<i class="fas ${icon}"></i> <span>${message}</span>`;
+            }
+        }
+        
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type}`;
+            notification.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${message}`;
+            notification.style.position = 'fixed';
+            notification.style.top = '20px';
+            notification.style.right = '20px';
+            notification.style.zIndex = '9999';
+            notification.style.minWidth = '300px';
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 5000);
+        }
+        
+        // ============================================
+        // NAVEGAÇÃO
+        // ============================================
+        
+        function navigateToPage(page) {
+            // Atualizar menu ativo
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+                if (item.getAttribute('data-page') === page) {
+                    item.classList.add('active');
+                }
+            });
+            
+            // Atualizar título da página
+            const pageTitles = {
+                dashboard: 'Dashboard',
+                tecnico: 'Cadastro Técnico',
+                fornecedor: 'Cadastrar Fornecedor',
+                item: 'Cadastrar Item',
+                movimentacao: 'Entrada-Saída',
+                os: 'OS - Ordem de Serviço',
+                pesquisa: 'Pesquisa',
+                configuracao: 'Configuração'
+            };
+            
+            document.getElementById('pageTitle').textContent = pageTitles[page] || 'Dashboard';
+            
+            // Carregar conteúdo da página
+            loadPageContent(page);
+        }
+        
+        function loadPageContent(page) {
+            const contentArea = document.getElementById('contentArea');
+            
+            switch(page) {
+                case 'dashboard':
+                    loadDashboard(contentArea);
+                    break;
+                case 'tecnico':
+                    loadTecnicoPage(contentArea);
+                    break;
+                case 'fornecedor':
+                    loadFornecedorPage(contentArea);
+                    break;
+                case 'item':
+                    loadItemPage(contentArea);
+                    break;
+                case 'movimentacao':
+                    loadMovimentacaoPage(contentArea);
+                    break;
+                case 'os':
+                    loadOSPage(contentArea);
+                    break;
+                case 'pesquisa':
+                    loadPesquisaPage(contentArea);
+                    break;
+                case 'configuracao':
+                    loadConfiguracaoPage(contentArea);
+                    break;
+                default:
+                    loadDashboard(contentArea);
+            }
+        }
+        
+        // ============================================
+        // DASHBOARD (ATUALIZADO)
+        // ============================================
+        
+        function loadDashboard(container) {
+            const hoje = new Date();
+            const umMesAtras = new Date(hoje.getFullYear(), hoje.getMonth() - 1, hoje.getDate());
+            
+            // Calcular estatísticas
+            const totalTecnicos = db.tecnicos.length;
+            const totalFornecedores = db.fornecedores.length;
+            const totalItens = db.itens.length;
+            const totalOS = db.ordensServico.length;
+            const osAbertas = db.ordensServico.filter(os => os.status !== 'concluido').length;
+            
+            // Verificar estoque baixo
+            const estoqueBaixo = db.itens.filter(item => item.quantidade <= item.quantidade_minima).length;
+            
+            // Últimas movimentações
+            const ultimasMovimentacoes = db.movimentacoes.slice(-5).reverse();
+            
+            container.innerHTML = `
+                <div class="alert alert-success">
+                    <i class="fas fa-cloud"></i> 
+                    <strong>Sistema Online</strong> - 
+                    Usuário: <strong>${currentUser.user_metadata?.full_name || currentUser.email}</strong> | 
+                    Acessível de qualquer lugar com internet
+                </div>
+                
+                <div class="dashboard-stats">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background-color: #e3f2fd; color: #2196f3;">
+                            <i class="fas fa-user-cog"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>${totalTecnicos}</h3>
+                            <p>Técnicos</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background-color: #f3e5f5; color: #9c27b0;">
+                            <i class="fas fa-truck"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>${totalFornecedores}</h3>
+                            <p>Fornecedores</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background-color: #e8f5e9; color: #4caf50;">
+                            <i class="fas fa-box"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>${totalItens}</h3>
+                            <p>Itens no Estoque</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background-color: #fff3e0; color: #ff9800;">
+                            <i class="fas fa-clipboard-list"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>${totalOS}</h3>
+                            <p>Ordens de Serviço</p>
+                        </div>
+                    </div>
+                </div>
+                
+                ${estoqueBaixo > 0 ? `
+                <div class="neon-alert">
+                    <i class="fas fa-exclamation-triangle"></i> ALERTA: ${estoqueBaixo} item(ns) com estoque abaixo do limite mínimo!
+                </div>
+                ` : ''}
+                
+                ${osAbertas > 0 ? `
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-circle"></i> Existem ${osAbertas} ordens de serviço em aberto que precisam de atenção.
+                </div>
+                ` : ''}
+                
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Últimas Movimentações</div>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Part Number</th>
+                                    <th>Tipo</th>
+                                    <th>Quantidade</th>
+                                    <th>Técnico</th>
+                                    <th>Observações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${ultimasMovimentacoes.map(mov => {
+                                    return `
+                                    <tr>
+                                        <td>${formatDateTime(mov.data_acao)}</td>
+                                        <td>${mov.part_number}</td>
+                                        <td>
+                                            <span class="status-badge ${mov.tipo === 'entrada' ? 'status-closed' : 'status-open'}">
+                                                ${mov.tipo === 'entrada' ? 'Entrada' : 'Saída'}
+                                            </span>
+                                        </td>
+                                        <td>${mov.quantidade}</td>
+                                        <td>${mov.tecnico_solicitante || 'N/A'}</td>
+                                        <td>${mov.observacoes || ''}</td>
+                                    </tr>
+                                    `;
+                                }).join('')}
+                                
+                                ${ultimasMovimentacoes.length === 0 ? `
+                                <tr>
+                                    <td colspan="6" style="text-align: center;">Nenhuma movimentação registrada.</td>
+                                </tr>
+                                ` : ''}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Itens com Estoque Baixo</div>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Part Number</th>
+                                    <th>Descrição</th>
+                                    <th>Estoque</th>
+                                    <th>Mínimo</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${db.itens.filter(item => item.quantidade <= item.quantidade_minima).map(item => `
+                                <tr>
+                                    <td>${item.part_number}</td>
+                                    <td>${item.descricao}</td>
+                                    <td>${item.quantidade}</td>
+                                    <td>${item.quantidade_minima}</td>
+                                    <td>
+                                        <span class="status-badge status-open">
+                                            <i class="fas fa-exclamation-triangle"></i> Baixo
+                                        </span>
+                                    </td>
+                                </tr>
+                                `).join('')}
+                                
+                                ${db.itens.filter(item => item.quantidade <= item.quantidade_minima).length === 0 ? `
+                                <tr>
+                                    <td colspan="5" style="text-align: center;">Nenhum item com estoque baixo.</td>
+                                </tr>
+                                ` : ''}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // ============================================
+        // CRUD TÉCNICOS (COMPLETO)
+        // ============================================
+        
+        function loadTecnicoPage(container) {
+            container.innerHTML = `
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Cadastro de Técnico</div>
+                    </div>
+                    <div class="card-body">
+                        <form id="formTecnico">
+                            <div class="form-row">
+                                <div class="form-col">
+                                    <div class="form-group">
+                                        <label class="form-label">Nome <span style="color: red;">*</span></label>
+                                        <input type="text" id="tecnicoNome" class="form-control" placeholder="Digite o nome completo" required>
+                                    </div>
+                                </div>
+                                <div class="form-col">
+                                    <div class="form-group">
+                                        <label class="form-label">Matrícula <span style="color: red;">*</span></label>
+                                        <input type="text" id="tecnicoMatricula" class="form-control" placeholder="Digite a matrícula" required>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-col">
+                                    <div class="form-group">
+                                        <label class="form-label">Data de Contratação <span style="color: red;">*</span></label>
+                                        <input type="date" id="tecnicoDataContratacao" class="form-control" required>
+                                    </div>
+                                </div>
+                                <div class="form-col">
+                                    <div class="form-group">
+                                        <label class="form-label">Cargo <span style="color: red;">*</span></label>
+                                        <input type="text" id="tecnicoCargo" class="form-control" placeholder="Digite o cargo" required>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Função <span style="color: red;">*</span></label>
+                                <input type="text" id="tecnicoFuncao" class="form-control" placeholder="Digite a função" required>
+                            </div>
+                            
+                            <div class="btn-group">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> ${editingTecnicoId ? 'Atualizar' : 'Salvar'}
+                                </button>
+                                <button type="button" id="btnLimparTecnico" class="btn btn-secondary">
+                                    <i class="fas fa-broom"></i> Limpar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Técnicos Cadastrados</div>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Matrícula</th>
+                                    <th>Data Contratação</th>
+                                    <th>Cargo</th>
+                                    <th>Função</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${db.tecnicos.map(tecnico => `
+                                <tr>
+                                    <td>${tecnico.nome}</td>
+                                    <td>${tecnico.matricula}</td>
+                                    <td>${formatDate(tecnico.data_contratacao)}</td>
+                                    <td>${tecnico.cargo}</td>
+                                    <td>${tecnico.funcao}</td>
+                                    <td class="action-buttons">
+                                        <button class="action-btn edit-btn" onclick="editTecnico('${tecnico.id}')">
+                                            <i class="fas fa-edit"></i> Editar
+                                        </button>
+                                        <button class="action-btn delete-btn" onclick="deleteTecnico('${tecnico.id}')">
+                                            <i class="fas fa-trash"></i> Excluir
+                                        </button>
+                                    </td>
+                                </tr>
+                                `).join('')}
+                                
+                                ${db.tecnicos.length === 0 ? `
+                                <tr>
+                                    <td colspan="6" style="text-align: center;">Nenhum técnico cadastrado.</td>
+                                </tr>
+                                ` : ''}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+            
+            const form = document.getElementById('formTecnico');
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                await saveTecnico();
+            });
+            
+            document.getElementById('btnLimparTecnico').addEventListener('click', function() {
+                form.reset();
+                editingTecnicoId = null;
+                const submitBtn = form.querySelector('button[type="submit"]');
+                submitBtn.innerHTML = '<i class="fas fa-save"></i> Salvar';
+            });
+            
+            document.getElementById('tecnicoDataContratacao').value = new Date().toISOString().split('T')[0];
+        }
+        
+        async function saveTecnico() {
+            const nome = document.getElementById('tecnicoNome').value.trim();
+            const matricula = document.getElementById('tecnicoMatricula').value.trim();
+            const dataContratacao = document.getElementById('tecnicoDataContratacao').value;
+            const cargo = document.getElementById('tecnicoCargo').value.trim();
+            const funcao = document.getElementById('tecnicoFuncao').value.trim();
+            
+            if (!nome || !matricula || !dataContratacao || !cargo || !funcao) {
+                alert('Por favor, preencha todos os campos obrigatórios!');
+                return;
+            }
+            
+            try {
+                showLoader();
+                
+                const tecnicoData = {
+                    nome: nome.replace(/\b\w/g, l => l.toUpperCase()),
+                    matricula,
+                    data_contratacao: dataContratacao,
+                    cargo,
+                    funcao,
+                    user_id: currentUser.id
+                };
+                
+                let result;
+                if (editingTecnicoId) {
+                    // Verificar duplicidade
+                    const duplicado = db.tecnicos.some(t => 
+                        t.id !== editingTecnicoId && 
+                        t.matricula === matricula
+                    );
+                    
+                    if (duplicado) {
+                        alert('Matrícula já cadastrada para outro técnico!');
+                        hideLoader();
+                        return;
+                    }
+                    
+                    result = await supabase
+                        .from('tecnicos')
+                        .update(tecnicoData)
+                        .eq('id', editingTecnicoId)
+                        .eq('user_id', currentUser.id);
+                } else {
+                    // Verificar duplicidade
+                    const duplicado = db.tecnicos.some(t => t.matricula === matricula);
+                    if (duplicado) {
+                        alert('Matrícula já cadastrada!');
+                        hideLoader();
+                        return;
+                    }
+                    
+                    result = await supabase
+                        .from('tecnicos')
+                        .insert(tecnicoData);
+                }
+                
+                if (result.error) throw result.error;
+                
+                // Recarregar dados
+                await loadUserData();
+                
+                // Recarregar página
+                loadTecnicoPage(document.getElementById('contentArea'));
+                
+                showNotification(editingTecnicoId ? 'Técnico atualizado!' : 'Técnico cadastrado!', 'success');
+                editingTecnicoId = null;
+                
+            } catch (error) {
+                console.error('Erro ao salvar técnico:', error);
+                showNotification('Erro: ' + error.message, 'error');
+            } finally {
+                hideLoader();
+            }
+        }
+        
+        function editTecnico(id) {
+            const tecnico = db.tecnicos.find(t => t.id === id);
+            if (!tecnico) return;
+            
+            document.getElementById('tecnicoNome').value = tecnico.nome;
+            document.getElementById('tecnicoMatricula').value = tecnico.matricula;
+            document.getElementById('tecnicoDataContratacao').value = tecnico.data_contratacao;
+            document.getElementById('tecnicoCargo').value = tecnico.cargo;
+            document.getElementById('tecnicoFuncao').value = tecnico.funcao;
+            
+            editingTecnicoId = id;
+            
+            const submitBtn = document.querySelector('#formTecnico button[type="submit"]');
+            submitBtn.innerHTML = '<i class="fas fa-save"></i> Atualizar';
+        }
+        
+        async function deleteTecnico(id) {
+            if (!confirm('Tem certeza que deseja excluir este técnico?')) return;
+            
+            try {
+                showLoader();
+                
+                // Verificar se técnico está em uso
+                const usado = db.movimentacoes.some(m => m.tecnico_solicitante_id === id) ||
+                             db.ordensServico.some(os => os.tecnico_responsavel === id);
+                
+                if (usado) {
+                    alert('Este técnico está vinculado a registros e não pode ser excluído!');
+                    hideLoader();
+                    return;
+                }
+                
+                const { error } = await supabase
+                    .from('tecnicos')
+                    .delete()
+                    .eq('id', id)
+                    .eq('user_id', currentUser.id);
+                
+                if (error) throw error;
+                
+                // Recarregar dados
+                await loadUserData();
+                
+                // Recarregar página
+                loadTecnicoPage(document.getElementById('contentArea'));
+                
+                showNotification('Técnico excluído com sucesso!', 'success');
+                
+            } catch (error) {
+                console.error('Erro ao excluir técnico:', error);
+                showNotification('Erro: ' + error.message, 'error');
+            } finally {
+                hideLoader();
+            }
+        }
+        
+        // ============================================
+        // FUNÇÕES AUXILIARES
+        // ============================================
+        
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            try {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('pt-BR');
+            } catch (e) {
+                return 'Data inválida';
+            }
+        }
+        
+        function formatDateTime(dateTimeString) {
+            if (!dateTimeString) return 'N/A';
+            try {
+                const date = new Date(dateTimeString);
+                return date.toLocaleString('pt-BR');
+            } catch (e) {
+                return 'Data inválida';
+            }
+        }
+        
+        // ============================================
+        // INICIALIZAÇÃO
+        // ============================================
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            initSystem();
+            setupEventListeners();
+        });
+        
+        function setupEventListeners() {
+            // Login
+            document.getElementById('btnLogin').addEventListener('click', login);
+            document.getElementById('registerLink').addEventListener('click', function(e) {
+                e.preventDefault();
+                showRegisterForm();
+            });
+            
+            // Registro
+            document.getElementById('btnRegister').addEventListener('click', register);
+            document.getElementById('backToLoginLink').addEventListener('click', function(e) {
+                e.preventDefault();
+                showLoginForm();
+            });
+            
+            // Tecla Enter
+            document.getElementById('loginPassword').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') login();
+            });
+            
+            // Logout
+            document.getElementById('logoutBtn').addEventListener('click', logout);
+            
+            // Navegação
+            document.querySelectorAll('.nav-item').forEach(item => {
+                if (item.id !== 'logoutBtn') {
+                    item.addEventListener('click', function() {
+                        const page = this.getAttribute('data-page');
+                        navigateToPage(page);
+                    });
+                }
+            });
+        }
+        
+        // Exportar funções globais
+        window.editTecnico = editTecnico;
+        window.deleteTecnico = deleteTecnico;
+        
+    </script>
+</body>
+</html>
